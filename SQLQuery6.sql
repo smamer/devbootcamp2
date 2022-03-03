@@ -1,31 +1,42 @@
+DROP TABLE IF EXISTS Rooms;
+DROP TABLE IF EXISTS RoomStays;
+DROP TABLE IF EXISTS RoomStatus;
+DROP TABLE IF EXISTS GuestClass;
+DROP TABLE IF EXISTS Guests;
+DROP TABLE IF EXISTS Class;
+DROP TABLE IF EXISTS GuestStatus;
+DROP TABLE IF EXISTS [Tavern];
+DROP TABLE IF EXISTS [GoodsReceived];
+DROP TABLE IF EXISTS [Sales];
+DROP TABLE IF EXISTS [ServiceSupplies];
+DROP TABLE IF EXISTS [Services];
+DROP TABLE IF EXISTS [ServiceStatus];
+DROP TABLE IF EXISTS [Inventory];
+DROP TABLE IF EXISTS [Users];
 DROP TABLE IF EXISTS [Role];
+DROP TABLE IF EXISTS [Supply];
 CREATE TABLE [Role](
 	RoleID INT PRIMARY KEY IDENTITY(1, 1),
 	RoleName varchar(250)
 );
-DROP TABLE IF EXISTS [Supply];
 CREATE TABLE [Supply](
 	SupplyID INT PRIMARY KEY IDENTITY(1, 1),
 	SupplyName varchar(250),
 	SupplyCost MONEY
 );
-DROP TABLE IF EXISTS [ServiceStatus];
 CREATE TABLE [ServiceStatus](
     StatusID INT PRIMARY KEY IDENTITY(1, 1),
     Status varchar(250)
 );
-DROP TABLE IF EXISTS [Services];
 CREATE TABLE [Services](
     ServiceID INT PRIMARY KEY IDENTITY(1, 1),
     ServiceName varchar(250),
     StatusID INT FOREIGN KEY REFERENCES ServiceStatus(StatusID)
 );
-DROP TABLE IF EXISTS [ServiceSupplies];
 CREATE TABLE [ServiceSupplies](
 	SupplyID INT FOREIGN KEY REFERENCES Supply(SupplyID),
 	ServiceID INT FOREIGN KEY REFERENCES Services(ServiceID)
 );
-DROP TABLE IF EXISTS [Sales];
 CREATE TABLE [Sales](
     ServiceID INT FOREIGN KEY REFERENCES Services(ServiceID),
     Guest varchar(250),
@@ -34,64 +45,62 @@ CREATE TABLE [Sales](
     AmountPurchased INT,
     TavernID INT
 );
-DROP TABLE IF EXISTS [GoodsReceived];
-CREATE TABLE [GoodsReceived](
-    SupplyID INT FOREIGN KEY REFERENCES Supply(SupplyID),
-    TavernID INT,
-    Cost MONEY,
-    Amount INT,
-    Date DATETIME
-);
-DROP TABLE IF EXISTS [Inventory];
 CREATE TABLE [Inventory](
     SupplyID INT FOREIGN KEY REFERENCES Supply(SupplyID),
     TavernID INT,
     DateOfInventory DATETIME,
     Quantity INT
 );
-DROP TABLE IF EXISTS [Users];
 CREATE TABLE [Users](
     UserID INT IDENTITY(1,1),
     UserName varchar(250),
-    RoleID INT FOREIGN KEY REFERENCES Role(RoleID)
+    RoleID INT
 );
-DROP TABLE IF EXISTS [Tavern];
+ALTER TABLE [Users]
+ADD PRIMARY KEY (UserID);
 CREATE TABLE [Tavern](
-    TavernID INT IDENTITY(1, 1),
+    TavernID INT PRIMARY KEY IDENTITY(1, 1),
     TavernName varchar(250),
     FloorCount INT,
     UserID INT,
     LocationID INT
 );
 ALTER TABLE [Tavern]
-ADD PRIMARY KEY (TavernID);
-ALTER TABLE [Users]
-ADD PRIMARY KEY (UserID);
-ALTER TABLE [Taverns]
 ADD FOREIGN KEY (UserID) REFERENCES Users(UserID);
-ALTER TABLE [GoodsReceived]
-ADD FOREIGN KEY (TavernID) REFERENCES Tavern(TavernID);
+CREATE TABLE [GoodsReceived](
+    SupplyID INT FOREIGN KEY REFERENCES Supply(SupplyID),
+    TavernID INT FOREIGN KEY REFERENCES Tavern(TavernID),
+    Cost MONEY,
+    Amount INT,
+    Date DATETIME
+);
+CREATE TABLE RoomStatus(
+	ID INT PRIMARY KEY IDENTITY(1,1),
+	Status VARCHAR(250)
+);
+CREATE TABLE Rooms(
+	ID INT PRIMARY KEY IDENTITY(1,1),
+	RoomStatusID INT FOREIGN KEY REFERENCES RoomStatus(ID),
+	TavernID INT FOREIGN KEY REFERENCES Tavern(TavernID)
+);
 ALTER TABLE [Sales]
 ADD FOREIGN KEY (TavernID) REFERENCES Tavern(TavernID);
 ALTER TABLE [GoodsReceived]
 ALTER COLUMN Date date;
-ALTER TABLE [Iventory]
+ALTER TABLE [Inventory]
 ADD FOREIGN KEY (TavernID) REFERENCES Tavern(TavernID);
 ALTER TABLE [Inventory]
 ALTER COLUMN DateOfInventory date;
 ALTER TABLE [Users]
 ADD FOREIGN KEY (RoleID) REFERENCES Role(RoleID);
-DROP TABLE IF EXISTS GuestStatus;
 CREATE TABLE GuestStatus(
 	ID INT PRIMARY KEY IDENTITY(1,1),
 	Status varchar(250)
 );
-DROP TABLE IF EXISTS Class;
 CREATE TABLE Class(
 	ID INT PRIMARY KEY IDENTITY(1,1),
 	ClassType varchar(250)
 );
-DROP TABLE IF EXISTS Guests;
 CREATE TABLE Guests(
 	GuestID INT PRIMARY KEY IDENTITY(1,1),
 	Names varchar(250),
@@ -100,11 +109,17 @@ CREATE TABLE Guests(
 	Cakeday date,
 	GuestStatus INT FOREIGN KEY REFERENCES GuestStatus(ID),
 );
-DROP TABLE IF EXISTS GuestClass;
 CREATE TABLE GuestClass(
 	GuestID INT FOREIGN KEY REFERENCES Guests(GuestID),
 	Class INT FOREIGN KEY REFERENCES Class(ID),
 	ClassLevel INT
+);
+CREATE TABLE RoomStays(
+	ID INT PRIMARY KEY IDENTITY(1,1),
+	GuestID INT FOREIGN KEY REFERENCES Guests(GuestID),
+	RoomID INT FOREIGN KEY REFERENCES Rooms(ID),
+	Date DATETIME,
+	Rate MONEY
 );
 INSERT INTO [GoodsReceived]
 VALUES (1,1,10,10,'2022-02-23')
@@ -246,3 +261,34 @@ INSERT INTO [GuestClass]
 VALUES (3,4,34)
 INSERT INTO [GuestClass]
 VALUES (3,2,28)
+INSERT INTO Rooms
+VALUES (1,1)
+INSERT INTO Rooms
+VALUES (1,1)
+INSERT INTO Rooms
+VALUES (2,1)
+INSERT INTO Rooms
+VALUES (3,1)
+INSERT INTO Rooms
+VALUES (1,1)
+INSERT INTO RoomStatus
+VALUES ('Occupied')
+INSERT INTO RoomStatus
+VALUES ('Available')
+INSERT INTO RoomStatus
+VALUES ('Dirty')
+INSERT INTO RoomStatus
+VALUES ('Broken')
+INSERT INTO RoomStatus
+VALUES ('Needs-bed')
+INSERT INTO RoomStays
+VALUES (1,1,1,'2022-03-02',20)
+INSERT INTO RoomStays
+VALUES (2,2,2,'2022-02-02',20)
+INSERT INTO RoomStays
+VALUES (3,3,3,'2022-03-02',20)
+INSERT INTO RoomStays
+VALUES (4,4,4,'2022-03-02',20)
+INSERT INTO RoomStays
+VALUES (5,5,5,'2022-03-02',20)
+
